@@ -11,6 +11,10 @@ function love.load()
         night = 1
     }
 
+    for k, v in pairs(love.graphics) do -- i'm so sick of typing love.graphics, so i'm making all the functions global (i know it's bad practice, but i don't care)
+        _G[k] = v
+    end
+
     Gamestate.switch(states.menu)
 end
 

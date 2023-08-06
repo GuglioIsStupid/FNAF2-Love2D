@@ -20,13 +20,13 @@ function game:enter(night)
 
     self.assets = {
         office = {
-            img = love.graphics.newImage("assets/images/game/office.png"),
+            img = newImage("assets/images/game/office.png"),
             spritesheet = false,
             x = 300,
             y = 0
         },
         desk = {
-            img = love.graphics.newImage("assets/images/game/desk.png"),
+            img = newImage("assets/images/game/desk.png"),
             spritesheet = true,
             frameByWidth = false,
             frameWidth = 851,
@@ -37,16 +37,16 @@ function game:enter(night)
             speed = 99,
         },
         mapbutton = {
-            img = love.graphics.newImage("assets/images/game/mapbutton.png"),
+            img = newImage("assets/images/game/mapbutton.png"),
             spritesheet = false,
             x = 505,
-            y = love.graphics.getHeight() - 50
+            y = getHeight() - 50
         },
         maskbutton = {
-            img = love.graphics.newImage("assets/images/game/maskbutton.png"),
+            img = newImage("assets/images/game/maskbutton.png"),
             spritesheet = false,
             x = 15,
-            y = love.graphics.getHeight() - 50
+            y = getHeight() - 50
         },
     }
 
@@ -55,11 +55,11 @@ function game:enter(night)
         if v.spritesheet then
             if v.frameByWidth then
                 for i = 1, v.img:getWidth() / v.frameWidth do
-                    table.insert(v.frames, love.graphics.newQuad((i - 1) * v.frameWidth, 0, v.frameWidth, v.frameHeight, v.img:getWidth(), v.img:getHeight()))
+                    table.insert(v.frames, newQuad((i - 1) * v.frameWidth, 0, v.frameWidth, v.frameHeight, v.img:getWidth(), v.img:getHeight()))
                 end
             else
                 for i = 1, v.img:getHeight() / v.frameHeight do
-                    table.insert(v.frames, love.graphics.newQuad(0, (i - 1) * v.frameHeight, v.frameWidth, v.frameHeight, v.img:getWidth(), v.img:getHeight()))
+                    table.insert(v.frames, newQuad(0, (i - 1) * v.frameHeight, v.frameWidth, v.frameHeight, v.img:getWidth(), v.img:getHeight()))
                 end
             end
         end
@@ -82,7 +82,7 @@ function game:update(dt)
     local mx, my = love.mouse.getPosition()
     if mx < 300 then
         officeOffset = officeOffset + 500 * dt
-    elseif mx > love.graphics.getWidth() - 300 then
+    elseif mx > getWidth() - 300 then
         officeOffset = officeOffset - 500 * dt
     end
 
@@ -94,14 +94,14 @@ function game:update(dt)
 end
 
 function game:draw()
-    love.graphics.push()
-    love.graphics.translate(officeOffset, 0)
-    love.graphics.draw(self.assets.office.img, 0, 0, 0, 1, 1, self.assets.office.x, self.assets.office.y)
-    love.graphics.draw(self.assets.desk.img, self.assets.desk.frames[math.floor(self.assets.desk.curFrame)], 225, 350, 0, 1, 1)
-    love.graphics.pop()
+    push()
+    translate(officeOffset, 0)
+    draw(self.assets.office.img, 0, 0, 0, 1, 1, self.assets.office.x, self.assets.office.y)
+    draw(self.assets.desk.img, self.assets.desk.frames[math.floor(self.assets.desk.curFrame)], 225, 350, 0, 1, 1)
+    pop()
 
-    love.graphics.draw(self.assets.mapbutton.img, self.assets.mapbutton.x, self.assets.mapbutton.y)
-    love.graphics.draw(self.assets.maskbutton.img, self.assets.maskbutton.x, self.assets.maskbutton.y)
+    draw(self.assets.mapbutton.img, self.assets.mapbutton.x, self.assets.mapbutton.y)
+    draw(self.assets.maskbutton.img, self.assets.maskbutton.x, self.assets.maskbutton.y)
 end
 
 function game:mousepressed(x, y, button)

@@ -3,36 +3,36 @@ local menu = {}
 function menu:enter()
     self.assets = {
         basemenu = {
-            img = love.graphics.newImage("assets/images/menu/basemenu.png"),
+            img = newImage("assets/images/menu/basemenu.png"),
             spritesheet = false
         },
         bonniemenu = {
-            img = love.graphics.newImage("assets/images/menu/bonniemenu.png"),
+            img = newImage("assets/images/menu/bonniemenu.png"),
             spritesheet = false
         },
         chicamenu = {
-            img = love.graphics.newImage("assets/images/menu/chicamenu.png"),
+            img = newImage("assets/images/menu/chicamenu.png"),
             spritesheet = false
         },
         freddymenu = {
-            img = love.graphics.newImage("assets/images/menu/freddymenu.png"),
+            img = newImage("assets/images/menu/freddymenu.png"),
             spritesheet = false
         },
 
         continue = {
-            img = love.graphics.newImage("assets/images/menu/continue.png"),
+            img = newImage("assets/images/menu/continue.png"),
             spritesheet = false
         },
         newgame = {
-            img = love.graphics.newImage("assets/images/menu/newgame.png"),
+            img = newImage("assets/images/menu/newgame.png"),
             spritesheet = false
         },
         nightword = {
-            img = love.graphics.newImage("assets/images/menu/nightword.png"),
+            img = newImage("assets/images/menu/nightword.png"),
             spritesheet = false
         },
         nightnumber = {
-            img = love.graphics.newImage("assets/images/menu/nightnumber.png"),
+            img = newImage("assets/images/menu/nightnumber.png"),
             spritesheet = true,
             frameByWidth = true,
             frameWidth = 14,
@@ -43,20 +43,20 @@ function menu:enter()
             speed = 0,
         },
         logo = {
-            img = love.graphics.newImage("assets/images/menu/logo.png"),
+            img = newImage("assets/images/menu/logo.png"),
             spritesheet = false,
             x = 25,
             y = 25
         },
         selection = {
-            img = love.graphics.newImage("assets/images/menu/selection.png"),
+            img = newImage("assets/images/menu/selection.png"),
             spritesheet = false,
             x = 25,
             y = 425
         },
 
         static = {
-            img = love.graphics.newImage("assets/images/menu/static.png"),
+            img = newImage("assets/images/menu/static.png"),
             spritesheet = true,
             frameByWidth = false,
             frameWidth = 1024,
@@ -73,11 +73,11 @@ function menu:enter()
         if v.spritesheet then
             if v.frameByWidth then
                 for i = 1, v.img:getWidth() / v.frameWidth do
-                    table.insert(v.frames, love.graphics.newQuad((i - 1) * v.frameWidth, 0, v.frameWidth, v.frameHeight, v.img:getWidth(), v.img:getHeight()))
+                    table.insert(v.frames, newQuad((i - 1) * v.frameWidth, 0, v.frameWidth, v.frameHeight, v.img:getWidth(), v.img:getHeight()))
                 end
             else
                 for i = 1, v.img:getHeight() / v.frameHeight do
-                    table.insert(v.frames, love.graphics.newQuad(0, (i - 1) * v.frameHeight, v.frameWidth, v.frameHeight, v.img:getWidth(), v.img:getHeight()))
+                    table.insert(v.frames, newQuad(0, (i - 1) * v.frameHeight, v.frameWidth, v.frameHeight, v.img:getWidth(), v.img:getHeight()))
                 end
             end
         end
@@ -149,31 +149,31 @@ function menu:mousemoved(x, y, dx, dy)
 end
 
 function menu:draw()
-    love.graphics.draw(
+    draw(
         curbasemenu == 1 and self.assets.basemenu.img or curbasemenu == 2 and self.assets.bonniemenu.img or curbasemenu == 3 and self.assets.chicamenu.img or curbasemenu == 4 and self.assets.freddymenu.img, 
         0, 
         0
     )
     
     -- set blend to add
-    love.graphics.setBlendMode("add", "alphamultiply")
-    love.graphics.draw(self.assets.static.img, self.assets.static.frames[math.floor(self.assets.static.curFrame)], 0, 0)
+    setBlendMode("add", "alphamultiply")
+    draw(self.assets.static.img, self.assets.static.frames[math.floor(self.assets.static.curFrame)], 0, 0)
     -- reset blend to alpha
-    love.graphics.setBlendMode("alpha")
-    love.graphics.setColor(1, 1, 1, 1)
+    setBlendMode("alpha")
+    setColor(1, 1, 1, 1)
 
-    love.graphics.draw(self.assets.continue.img, 75, 500)
-    love.graphics.draw(self.assets.newgame.img, 75, 425)
-    love.graphics.draw(self.assets.selection.img, self.assets.selection.x, self.assets.selection.y)
+    draw(self.assets.continue.img, 75, 500)
+    draw(self.assets.newgame.img, 75, 425)
+    draw(self.assets.selection.img, self.assets.selection.x, self.assets.selection.y)
 
     if self.assets.selection.y == 500 then
         -- continue is selected
-        love.graphics.draw(self.assets.nightword.img, 75, 550)
-        love.graphics.draw(self.assets.nightnumber.img, self.assets.nightnumber.frames[save.night+1], 75 + self.assets.nightword.img:getWidth() + 10, 552)
+        draw(self.assets.nightword.img, 75, 550)
+        draw(self.assets.nightnumber.img, self.assets.nightnumber.frames[save.night+1], 75 + self.assets.nightword.img:getWidth() + 10, 552)
     end
 
     -- draw the logo
-    love.graphics.draw(self.assets.logo.img, self.assets.logo.x, self.assets.logo.y)
+    draw(self.assets.logo.img, self.assets.logo.x, self.assets.logo.y)
 end
 
 return menu
