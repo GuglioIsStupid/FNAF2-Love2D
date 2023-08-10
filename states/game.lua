@@ -69,13 +69,45 @@ function game:enter(night)
     }
     self.camsUp = false
 
-    self.assets = {
-        office = {
+    self.office = {
+        normal = {
             img = newImage("assets/images/game/office.png"),
             spritesheet = false,
             x = 300,
             y = 0
         },
+        leftlight = {
+            img = newImage("assets/images/game/office-leftlight.png"),
+            spritesheet = false,
+            x = 300,
+            y = 0
+        },
+        rightlight = {
+            img = newImage("assets/images/game/office-rightlight.png"),
+            spritesheet = false,
+            x = 300,
+            y = 0
+        },
+        middlelight = {
+            img = newImage("assets/images/game/office-middlelight.png"),
+            spritesheet = false,
+            x = 300,
+            y = 0
+        },
+
+        draw = function()
+            draw(self.office.normal.img, 0, 0, 0, 1, 1, self.office.normal.x, self.office.normal.y)
+            if self.lighton and officeOffset > 200 then
+                draw(self.office.leftlight.img, 0, 0, 0, 1, 1, self.office.leftlight.x, self.office.leftlight.y)
+            elseif self.lighton and officeOffset < -225 then
+                draw(self.office.rightlight.img, 0, 0, 0, 1, 1, self.office.rightlight.x, self.office.rightlight.y)
+            elseif self.lighton then
+                draw(self.office.middlelight.img, 0, 0, 0, 1, 1, self.office.middlelight.x, self.office.middlelight.y)
+            end
+        end
+    }
+
+    self.assets = {
         desk = {
             img = newImage("assets/images/game/desk.png"),
             spritesheet = true,
@@ -210,6 +242,30 @@ function game:enter(night)
 
         leftlight = {
             img = newImage("assets/images/game/leftlight.png"),
+            spritesheet = false,
+            x = 0,
+            y = 0,
+            ox = 0,
+            oy = 0,
+        },
+        rightlight = {
+            img = newImage("assets/images/game/rightlight.png"),
+            spritesheet = false,
+            x = 0,
+            y = 0,
+            ox = 0,
+            oy = 0,
+        },
+        leftlighton = {
+            img = newImage("assets/images/game/leftlight-on.png"),
+            spritesheet = false,
+            x = 0,
+            y = 0,
+            ox = 0,
+            oy = 0,
+        },
+        rightlighton = {
+            img = newImage("assets/images/game/rightlight-on.png"),
             spritesheet = false,
             x = 0,
             y = 0,
@@ -523,9 +579,9 @@ function game:update(dt)
 
     local mx, my = love.mouse.getPosition()
     if mx < 300 then
-        officeOffset = officeOffset + 500 * dt
+        officeOffset = officeOffset + 800 * dt
     elseif mx > getWidth() - 300 then
-        officeOffset = officeOffset - 500 * dt
+        officeOffset = officeOffset - 800 * dt
     end
 
     if officeOffset > 300 then
@@ -580,17 +636,21 @@ function game:update(dt)
         end
     end
 
-    self.lighton = love.keyboard.isDown("lctrl")
-
-    -- go through all cams
-
+    self.lighton = not self.assets.deepbreathing.audio:isPlaying() and love.keyboard.isDown("lctrl")
 end
 
 function game:draw()
     push()
     translate(officeOffset, 0)
-    draw(self.assets.office.img, 0, 0, 0, 1, 1, self.assets.office.x, self.assets.office.y)
+    self.office:draw()
     draw(self.assets.desk.img, self.assets.desk.frames[math.floor(self.assets.desk.curFrame)], 225, 350, 0, 1, 1)
+    draw(self.assets.leftlight.img, -200, 355)
+    draw(self.assets.rightlight.img, 1125, 350)
+    if self.lighton and officeOffset > 200 then
+        draw(self.assets.leftlighton.img, -200, 355)
+    elseif self.lighton and officeOffset < -225 then
+        draw(self.assets.rightlighton.img, 1125, 350)
+    end
     pop()
 
     if not self.assets.camflip.draw then
@@ -601,8 +661,6 @@ function game:draw()
             draw(self.assets.camflip.img, self.assets.camflip.frames[math.floor(self.assets.camflip.curFrame)], 0, 0)
         end
     end
-    draw(self.assets.mapbutton.img, self.assets.mapbutton.x, self.assets.mapbutton.y)
-    if not self.camsUp then draw(self.assets.maskbutton.img, self.assets.maskbutton.x, self.assets.maskbutton.y) end
 
     if self.assets.deepbreathing.audio:isPlaying() then
         self.assets.mask.y = fpsLerp(self.assets.mask.y, self.assets.mask.img:getHeight()+15, love.timer.getDelta(), 0.05)
@@ -617,7 +675,6 @@ function game:draw()
         translate(self.campan, 0)
         self.cams[self.curcam]:draw()
         pop()
-        setBlendMode("add", "alphamultiply")
         setColor(1,1,1,self.assets.static.alpha)
         self.assets.static.alpha = fpsLerp(self.assets.static.alpha, 0.45, love.timer.getDelta(), 0.25)
         draw(self.assets.static.img, self.assets.static.frames[math.floor(self.assets.static.curFrame)], 0, 0)
@@ -648,14 +705,26 @@ function game:draw()
         print("X: "..love.mouse.getX().." Y: "..love.mouse.getY().."", 0, 0)
 
     end
+    if not self.assets.deepbreathing.audio:isPlaying() then draw(self.assets.mapbutton.img, self.assets.mapbutton.x, self.assets.mapbutton.y) end
+    if not self.camsUp then draw(self.assets.maskbutton.img, self.assets.maskbutton.x, self.assets.maskbutton.y) end
 
     draw(self.assets.flashlight.img, 15, 15)
+    draw(self.assets.battery.img, self.assets.battery.frames[6], 5, 30)
 
     --draw(self.assets.danger.img, self.assets.danger.frames[math.floor(self.assets.danger.curFrame)], 0, 0)
 end
 
 function game:mousepressed(x, y, button)
-
+    -- go through all cams, and if its pressed, set the cam to that cam
+    for i, v in pairs(self.camButtons) do
+        if type(v) == "table" then
+            -- check if it was pressed
+            if x > v.x and x < v.x + self.camButtons.camback:getWidth() and y > v.y and y < v.y + self.camButtons.camback:getHeight() then
+                self.curcam = i
+                self.assets.static.alpha = 1
+            end
+        end
+    end
 end
 
 function game:mousereleased(x, y, button)
