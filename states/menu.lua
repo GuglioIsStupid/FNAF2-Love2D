@@ -1,5 +1,9 @@
 local menu = {}
-
+local olans = love.audio.newSource
+function love.audio.newSource(path, type)
+    local type = type or "static"
+    return olans(path, type)
+end
 function menu:enter()
     self.assets = {
         basemenu = {
@@ -66,7 +70,32 @@ function menu:enter()
             curFrame = 1,
             speed = 99,
         },
+
+        staticaudio = {
+            spritesheet = false,
+            audio = love.audio.newSource("assets/audio/static2.wav"),
+            play = function(self)
+                self.audio:play()
+            end,
+            stop = function(self)
+                self.audio:stop()
+            end
+        },
+        menutheme = {
+            spritesheet = false,
+            audio = love.audio.newSource("assets/audio/The_Sand_Temple_Loop_G.wav"),
+            play = function(self)
+                self.audio:play()
+            end,
+            stop = function(self)
+                self.audio:stop()
+            end
+        },
     }
+
+    self.assets.menutheme.audio:setLooping(true)
+    self.assets.menutheme:play()
+    self.assets.staticaudio:play()
 
     -- set up the frames for the spritesheets
     for k, v in pairs(self.assets) do
@@ -100,7 +129,7 @@ function menu:enter()
         end
 
         Timer.script(function(w)
-            w(0.05)
+            w(0.1)
             determineRndMenu()
         end)
     end
@@ -128,6 +157,9 @@ function menu:mousepressed(x, y, button)
         -- set the state to game
         Gamestate.switch(states.game, save.night)
     end
+
+    self.assets.menutheme:stop()
+    self.assets.staticaudio:stop()
 end
 
 function menu:mousereleased(x, y, button)
