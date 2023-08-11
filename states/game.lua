@@ -49,22 +49,53 @@ function game:enter(night)
         wgfreddy = nil,
     }
 
-    self.battery = 100
+    self.battery = (
+        save.night == 1 and 7000 or
+        save.night == 2 and 6000 or
+        save.night == 3 and 5000 or
+        save.night == 4 and 4000 or
+        save.night >= 5 and 3000
+    )
+    self.maxbattery = self.battery
+    -- there is 6 battery animations, going from empty, 1 bar, 2 bars, 3 bars, full, and full again
+    -- determine the battery needed for the battery animation
+    self.batteryAnimationIndexs = {}
+    for i = 1, 6 do
+        self.batteryAnimationIndexs[i] = math.floor(self.maxbattery / 6 * i)
+    end
+    -- flip the table
+
+    self.batteryAnimationIndex = 1
+
+    self.am = 0
+    self.time = 12
+
+    function timeadvance()
+        Timer.after(1, function()
+            self.am = self.am + 1
+            if self.am >= 70 then
+                if self.time == 12 then
+                    self.time = 1
+                else
+                    self.time = self.time + 1
+                end
+            end
+        end)
+    end
 
     self.positions = {
-        -- 0 is stage
-        tfreddy = 0,
-        tbonnie = 0,
-        tchica = 0,
+        tfreddy = 9,
+        tbonnie = 9,
+        tchica = 9,
 
         mangle = 0,
         balloonboy = 0,
         marionette = 0,
 
-        wfreddy = 0,
-        wbonnie = 0,
-        wchica = 0,
-        wfoxy = 0,
+        wfreddy = 8,
+        wbonnie = 8,
+        wchica = 8,
+        wfoxy = 8,
         wgfreddy = 0,
     }
     self.camsUp = false
@@ -239,6 +270,19 @@ function game:enter(night)
             curFrame = 1,
             speed = 2,
         },
+        camblip = {
+            img = newImage("assets/images/game/camblip.png"),
+            spritesheet = true,
+            frameByWidth = false,
+            frameWidth = 1024,
+            frameHeight = 768,
+
+            frames = {},
+            curFrame = 1,
+            speed = 25,
+            paused = true,
+            pauseOnFinish = true
+        },
 
         leftlight = {
             img = newImage("assets/images/game/leftlight.png"),
@@ -314,6 +358,16 @@ function game:enter(night)
                 self.audio:stop()
             end
         },
+        blip = {
+            spritesheet = false,
+            audio = love.audio.newSource("assets/audio/blip3.wav"),
+            play = function(self)
+                self.audio:play()
+            end,
+            stop = function(self)
+                self.audio:stop()
+            end
+        },
 
         call = {
             spritesheet = false,
@@ -333,6 +387,13 @@ function game:enter(night)
             end
         }
     }
+
+    self.fonts = {
+        volter = love.graphics.newFont("assets/fonts/Volter.ttf", 20),
+    }
+    setFont(self.fonts.volter)
+
+    self.assets.deepbreathing.audio:setLooping(true)
 
     self.lighton = false
 
@@ -382,8 +443,8 @@ function game:enter(night)
             selected = false,
         },
         cam7 = {
-            x = 0,
-            y = 0,
+            x = 735,
+            y = 430,
             img = newImage("assets/images/game/cam7.png"),
             selected = false,
         },
@@ -439,7 +500,20 @@ function game:enter(night)
 
         },
         cam7 = {
+            normal = newImage("assets/images/game/mainhall.png"),
+            light = newImage("assets/images/game/mainhall-light.png"),
+            tc = newImage("assets/images/game/mainhall-tc.png"),
+            tclight = newImage("assets/images/game/mainhall-tc-light.png"),
+            wblight = newImage("assets/images/game/mainhall-wb-light.png"),
+            wflight = newImage("assets/images/game/mainhall-wf-light.png"),
 
+            draw = function()
+                if self.lighton then
+                    love.graphics.draw(self.cams[self.curcam].light, 0, 0)
+                else
+                    love.graphics.draw(self.cams[self.curcam].normal, 0, 0)
+                end
+            end
         },
         cam8 = {
             normal = newImage("assets/images/game/partsservice.png"),
@@ -560,7 +634,7 @@ function game:update(dt)
         -- if ai doesn't equal 0 and timers are nil
         if v ~= 0 and self.timers[i] == nil then
             -- set timers
-            self.timers[i] = Timer.after(love.math.random(3, 5), function()
+            self.timers[i] = Timer.after(5, function()
                 self.ai[i] = 0
                 self.timers[v] = nil
 
@@ -576,6 +650,20 @@ function game:update(dt)
             end)
         end
     end
+
+    if self.lighton then
+        self.battery = self.battery - 1
+    end
+
+    for i = 1, #self.batteryAnimationIndexs do
+        if self.battery <= self.batteryAnimationIndexs[i] then
+            self.batteryAnimationIndex = i
+            self.batteryAnimationIndexs[i] = -1000
+            break
+        end
+    end
+    self.assets.battery.curFrame = self.batteryAnimationIndex
+    --oprint(self.batteryAnimationIndex, self.battery, unpack(self.batteryAnimationIndexs))
 
     local mx, my = love.mouse.getPosition()
     if mx < 300 then
@@ -627,6 +715,9 @@ function game:update(dt)
                 end
                 if self.camsUp then
                     self.assets.static.alpha = 1
+                    self.assets.camblip.paused = false
+                    self.assets.camblip.curFrame = 1
+                    self.assets.blip:play()
                 end
             end
         else
@@ -663,7 +754,7 @@ function game:draw()
     end
 
     if self.assets.deepbreathing.audio:isPlaying() then
-        self.assets.mask.y = fpsLerp(self.assets.mask.y, self.assets.mask.img:getHeight()+15, love.timer.getDelta(), 0.05)
+        self.assets.mask.y = fpsLerp(self.assets.mask.y, self.assets.mask.img:getHeight(), love.timer.getDelta(), 0.05)
     else
         self.assets.mask.y = fpsLerp(self.assets.mask.y, 0, love.timer.getDelta(), 0.05)
     end
@@ -679,7 +770,11 @@ function game:draw()
         self.assets.static.alpha = fpsLerp(self.assets.static.alpha, 0.45, love.timer.getDelta(), 0.25)
         draw(self.assets.static.img, self.assets.static.frames[math.floor(self.assets.static.curFrame)], 0, 0)
         setColor(1,1,1,1)
-        setBlendMode("alpha")
+        --setBlendMode("alpha")
+        if not self.assets.camblip.paused then
+            draw(self.assets.camblip.img, self.assets.camblip.frames[math.floor(self.assets.camblip.curFrame)], 0, 0)
+        end
+        
 
         draw(self.camButtons.map, 550, 375)
 
@@ -701,15 +796,20 @@ function game:draw()
             end
         end
 
+        draw(self.camButtons.camsOutline)
+
         oprint("X: "..love.mouse.getX().." Y: "..love.mouse.getY().."", 0, 0)
         print("X: "..love.mouse.getX().." Y: "..love.mouse.getY().."", 0, 0)
 
     end
+    draw(self.assets.flashlight.img, 15, 15)
+    draw(self.assets.battery.img, self.assets.battery.frames[math.floor(self.assets.battery.curFrame)], 5, 30)
+
+    printf("Night " .. save.night, 800, 20, 100, "right", 0, 2, 2)
+    printf(self.time .. " AM", 800, 60, 100, "right", 0, 2, 2)
+
     if not self.assets.deepbreathing.audio:isPlaying() then draw(self.assets.mapbutton.img, self.assets.mapbutton.x, self.assets.mapbutton.y) end
     if not self.camsUp then draw(self.assets.maskbutton.img, self.assets.maskbutton.x, self.assets.maskbutton.y) end
-
-    draw(self.assets.flashlight.img, 15, 15)
-    draw(self.assets.battery.img, self.assets.battery.frames[6], 5, 30)
 
     --draw(self.assets.danger.img, self.assets.danger.frames[math.floor(self.assets.danger.curFrame)], 0, 0)
 end
@@ -722,6 +822,10 @@ function game:mousepressed(x, y, button)
             if x > v.x and x < v.x + self.camButtons.camback:getWidth() and y > v.y and y < v.y + self.camButtons.camback:getHeight() then
                 self.curcam = i
                 self.assets.static.alpha = 1
+                
+                self.assets.camblip.curFrame = 1
+                self.assets.camblip.paused = false
+                self.assets.blip:play()
             end
         end
     end

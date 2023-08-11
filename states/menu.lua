@@ -174,7 +174,6 @@ function menu:mousemoved(x, y, dx, dy)
         self.assets.selection.y = 500
     -- if mouse is hovering over new game
     elseif x >= 50 and x <= 50 + self.assets.newgame.img:getWidth() and y >= 425 and y <= 425 + self.assets.newgame.img:getHeight() then
-        -- set selected x and y to new game (x is x - 50, y is y)
         self.assets.selection.x = 25
         self.assets.selection.y = 425
     end
@@ -182,7 +181,10 @@ end
 
 function menu:draw()
     draw(
-        curbasemenu == 1 and self.assets.basemenu.img or curbasemenu == 2 and self.assets.bonniemenu.img or curbasemenu == 3 and self.assets.chicamenu.img or curbasemenu == 4 and self.assets.freddymenu.img, 
+        curbasemenu == 1 and self.assets.basemenu.img or 
+        curbasemenu == 2 and self.assets.bonniemenu.img or 
+        curbasemenu == 3 and self.assets.chicamenu.img or 
+        curbasemenu == 4 and self.assets.freddymenu.img, 
         0, 
         0
     )

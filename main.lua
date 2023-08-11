@@ -17,10 +17,16 @@ function love.load()
         _G[k] = v
     end
 
+    setDefaultFilter("nearest", "nearest")
+
     Gamestate.switch(states.menu)
 end
 
 function love.update(dt)
+    -- fps cap is 60
+    if dt < 1/60 then
+        love.timer.sleep(1/60 - dt)
+    end
     Timer.update(dt)
     Gamestate.update(dt)
 end
